@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.cdnfonts.com/css/clarendon" rel="stylesheet">
+    <title>Jeopardy Game - Player Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Clarendon', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f4d 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background elements */
+        .bg-animation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bg-square {
+            position: absolute;
+            border: 2px solid rgba(214, 159, 76, 0.1);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .bg-square:nth-child(1) {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .bg-square:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 5s;
+        }
+
+        .bg-square:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0.1;
+            }
+            50% {
+                transform: translate(30px, -30px) rotate(180deg);
+                opacity: 0.3;
+            }
+        }
+
+        .container {
+            text-align: center;
+            z-index: 1;
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: bold;
+            background: linear-gradient(180deg, #ffffff 0%, #d69f4c 50%, #b8860b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(214, 159, 76, 0.5));
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: #d69f4c;
+            margin-bottom: 50px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .players-form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-bottom: 40px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .player-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            animation: slideIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .player-input-group:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .player-input-group:nth-child(2) {
+            animation-delay: 0.4s;
+        }
+
+        .player-input-group:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        label {
+            font-size: 1.2rem;
+            color: #d69f4c;
+            margin-bottom: 10px;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+        }
+
+        input[type="text"] {
+            font-family: 'Clarendon', sans-serif;
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.3rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #d69f4c;
+            border-radius: 5px;
+            color: white;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ffca3a;
+            box-shadow: 0 0 20px rgba(214, 159, 76, 0.4);
+            transform: translateY(-2px);
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            animation: fadeInUp 1s ease-out 0.8s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        button {
+            font-family: 'Clarendon', sans-serif;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #0a0e27;
+            background: linear-gradient(180deg, #d69f4c 0%, #b8860b 100%);
+            border: none;
+            padding: 18px 50px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(214, 159, 76, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(214, 159, 76, 0.6);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(214, 159, 76, 0.4);
+        }
+
+        button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .back-btn {
+            background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            .subtitle {
+                font-size: 1rem;
+            }
+            input[type="text"] {
+                font-size: 1.1rem;
+            }
+            button {
+                font-size: 1.1rem;
+                padding: 15px 35px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="bg-square"></div>
+        <div class="bg-square"></div>
+        <div class="bg-square"></div>
+    </div>
+
+    <div class="container">
+        <h1>PLAYER SETUP</h1>
+        <p class="subtitle">Enter Player Names</p>
+
+        <div class="players-form">
+            <div class="player-input-group">
+                <label for="player1">Player 1</label>
+                <input type="text" id="player1" placeholder="Enter name" maxlength="20">
+            </div>
+
+            <div class="player-input-group">
+                <label for="player2">Player 2</label>
+                <input type="text" id="player2" placeholder="Enter name" maxlength="20">
+            </div>
+
+            <div class="player-input-group">
+                <label for="player3">Player 3</label>
+                <input type="text" id="player3" placeholder="Enter name" maxlength="20">
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="back-btn" onclick="goBack()">
+                <span>Back</span>
+            </button>
+            <button onclick="startGame()">
+                <span>Start Game</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Load saved names if they exist
+        window.addEventListener('load', () => {
+            const player1 = localStorage.getItem('player1Name') || '';
+            const player2 = localStorage.getItem('player2Name') || '';
+            const player3 = localStorage.getItem('player3Name') || '';
+            
+            if (player1) document.getElementById('player1').value = player1;
+            if (player2) document.getElementById('player2').value = player2;
+            if (player3) document.getElementById('player3').value = player3;
+            
+            // Focus first input
+            setTimeout(() => {
+                document.getElementById('player1').focus();
+            }, 100);
+        });
+
+        function startGame() {
+            const player1 = document.getElementById('player1').value.trim() || 'Player 1';
+            const player2 = document.getElementById('player2').value.trim() || 'Player 2';
+            const player3 = document.getElementById('player3').value.trim() || 'Player 3';
+
+            // Store names in localStorage
+            localStorage.setItem('player1Name', player1);
+            localStorage.setItem('player2Name', player2);
+            localStorage.setItem('player3Name', player3);
+
+            // Add fade out animation
+            document.body.style.transition = 'opacity 0.5s';
+            document.body.style.opacity = '0';
+            
+            // Navigate to game page after animation
+            setTimeout(() => {
+                window.location.href = 'game.html';
+            }, 500);
+        }
+
+        function goBack() {
+            document.body.style.transition = 'opacity 0.5s';
+            document.body.style.opacity = '0';
+            
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
+        }
+
+        // Add keyboard support - Enter to start game
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+        });
+    </script>
+</body>
+</html>
