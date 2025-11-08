@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.cdnfonts.com/css/clarendon" rel="stylesheet">
-    <title>Jeopardy Game - Opening</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BBH+Sans+Hegarty&display=swap">
+    <title>Banananeopardy Game - Opening</title>
     <style>
         * {
             margin: 0;
@@ -52,7 +53,15 @@
             height: 150px;
             top: 60%;
             right: 15%;
-            animation-delay: 5s;
+            animation-delay: 0s;
+        }
+
+        .bg-square:nth-child(4) {
+            width: 120px;
+            height: 120px;
+            top: 10%;
+            right: 15%;
+            animation-delay: 0s;
         }
 
         .bg-square:nth-child(3) {
@@ -60,17 +69,17 @@
             height: 100px;
             bottom: 20%;
             left: 20%;
-            animation-delay: 10s;
+            animation-delay: 0s;
         }
 
         @keyframes float {
             0%, 100% {
                 transform: translate(0, 0) rotate(0deg);
-                opacity: 0.1;
+                opacity: 0.5;
             }
             50% {
                 transform: translate(30px, -30px) rotate(180deg);
-                opacity: 0.3;
+                opacity: 0.5;
             }
         }
 
@@ -87,8 +96,9 @@
         }
 
         h1 {
-            font-size: 8rem;
-            font-weight: bold;
+            font-size: 5rem;
+            /* font-weight: bold; */
+            font-family: 'BBH Sans Hegarty', sans-serif;
             background: linear-gradient(180deg, #ffffff 0%, #d69f4c 50%, #b8860b 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -101,7 +111,7 @@
         }
 
         h1::before {
-            content: 'JEOPARDY!';
+            content: 'BANANANEOPARDY!';
             position: absolute;
             left: 0;
             top: 0;
@@ -142,10 +152,10 @@
                 transform: translateY(0);
             }
         }
-
+/* 
         .subtitle {
             font-size: 1.5rem;
-            color: #d69f4c;
+            color: #000000;
             margin-top: -20px;
             margin-bottom: 50px;
             opacity: 0;
@@ -153,7 +163,8 @@
             letter-spacing: 0.3em;
             text-transform: uppercase;
             display: none;
-        }
+            font-family: "Impact";
+        } */
 
         @keyframes fadeIn {
             to {
@@ -165,10 +176,12 @@
             font-family: 'Clarendon', sans-serif;
             font-size: 1.5rem;
             font-weight: bold;
-            color: #0a0e27;
+            color: #fcfcfc8c;
             background: linear-gradient(180deg, #d69f4c 0%, #b8860b 100%);
             border: none;
-            padding: 20px 60px;
+            padding: 15px 40px;
+            font-family: "Impact";
+            font-size: 1.5em;
             cursor: pointer;
             border-radius: 5px;
             box-shadow: 0 10px 30px rgba(214, 159, 76, 0.4);
@@ -283,11 +296,12 @@
         <div class="bg-square"></div>
         <div class="bg-square"></div>
         <div class="bg-square"></div>
+        <div class="bg-square"></div>
     </div>
 
     <div class="container">
         <div class="logo-container">
-            <h1>JEOPARDY!</h1>
+            <h1>BANANANEOPARDY!</h1>
             <div class="sparkle"></div>
             <div class="sparkle"></div>
             <div class="sparkle"></div>
