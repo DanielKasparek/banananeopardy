@@ -1,9 +1,10 @@
 # Async code inspired by Digikey youtube video: https://youtu.be/5VLvmA__2v0 and post: https://www.digikey.com/en/maker/projects/getting-started-with-asyncio-in-micropython-raspberry-pi-pico/110b4243a2f544b6af60411a85f0437c
 from uasyncio import create_task, sleep, run
+import json
 # Allow for connection to wireless
 from wireless import connectWireless
 # Allow for GPIO access
-from gpio import shortPress, longPress, resetPress
+from gpio import get_button_presses
 
 # Original code for web socket server by Florin Dragan licensed under the MIT License: https://gitlab.com/florindragan/raspberry_pico_w_websocket/-/blob/main/LICENSE
 # MIT License
@@ -34,7 +35,7 @@ from ws_server import WebSocketServer, WebSocketClient
 class clientHandle(WebSocketClient):
     def process(self, dataList):
         try:
-            # Update graphs
+            # Send button data to client
             self.connection.write(dataList)
         except ClientClosedError:
             self.connection.close()
@@ -63,6 +64,16 @@ server.start()
 async def main():
     # "Loop"
     while True:
-        server.process_all("")
-        await sleep(1)
+        # Poll button states
+        button_presses = get_button_presses()
+        
+        # Send button press events to all connected clients
+        pressed_buttons = [btn for btn, pressed in button_presses.items() if pressed]
+        if pressed_buttons:
+            data = json.dumps({"buttons": pressed_buttons})
+            server.process_all(data)
+        else:
+            server.process_all("")
+        
+        await sleep(0.05)  # Poll every 50ms for responsive input
 run(main())
