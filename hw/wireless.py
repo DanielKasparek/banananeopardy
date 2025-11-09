@@ -5,7 +5,7 @@ from time import sleep
 # Get secrets
 from secrets import SSID, PASS
 
-# Connect to a wireless network
+# Create a wireless AP to allow devices to connect to
 
 
 def connectWireless():
@@ -15,7 +15,7 @@ def connectWireless():
     wlan.active(True)
 
     # Check connection
-    max_wait = 100
+    max_wait = 10
     while max_wait > 0:
         if wlan.status() < 0 or wlan.status() >= 3:
             break

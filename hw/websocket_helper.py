@@ -24,7 +24,7 @@
 from ubinascii import b2a_base64
 from uhashlib import sha1
 
-# No clue how this works as it is not my original code
+# Effectively bit bangs a websocket
 
 
 def server_handshake(sock):
