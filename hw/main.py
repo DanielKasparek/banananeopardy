@@ -4,7 +4,7 @@ import json
 # Allow for connection to wireless
 from wireless import connectWireless
 # Allow for GPIO access
-from gpio import get_button_events, update_leds
+from gpio import get_button_events
 
 # Original code for web socket server by Florin Dragan licensed under the MIT License: https://gitlab.com/florindragan/raspberry_pico_w_websocket/-/blob/main/LICENSE
 # MIT License
