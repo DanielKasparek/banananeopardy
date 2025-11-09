@@ -4,65 +4,53 @@ from machine import Pin
 import time
 
 # Constants
-DEBOUNCE_TIME = 20   # Debounce time in milliseconds
+DEBOUNCE_TIME: int = 20   # Debounce time in milliseconds
 
 
 class Player:
     """Represents a player with button, LED, and state tracking"""
     
-    def __init__(self, name, btn_pin, led_pin):
-        self.name = name
-        self.btn = Pin(btn_pin, Pin.IN, Pin.PULL_UP)
-        self.led = Pin(led_pin, Pin.OUT, None)
-        self.lockout = False
-        self.last_interrupt_time = 0
+    def __init__(self, name: str, btn_pin: int, led_pin: int) -> None:
+        self.name: str = name
+        self.btn: Pin = Pin(btn_pin, Pin.IN, Pin.PULL_UP)
+        self.led: Pin = Pin(led_pin, Pin.OUT, None)
+        self.lockout: bool = False
+        self.last_interrupt_time: int = 0
 
 class ControlButton:
     """Represents a control button with state tracking"""
     
-    def __init__(self, name, pin):
-        self.name = name
-        self.btn = Pin(pin, Pin.IN, Pin.PULL_UP)
-        self.last_interrupt_time = 0
+    def __init__(self, name: str, pin: int) -> None:
+        self.name: str = name
+        self.btn: Pin = Pin(pin, Pin.IN, Pin.PULL_UP)
+        self.last_interrupt_time: int = 0
 
 
-# Configuration for players
-PLAYER_CONFIG = [
-    {'name': 'player1', 'btn_pin': 0, 'led_pin': 13},
-    {'name': 'player2', 'btn_pin': 1, 'led_pin': 14},
-    {'name': 'player3', 'btn_pin': 2, 'led_pin': 15},
-]
-
-# Configuration for control buttons
-CONTROL_BUTTONS = {
-    'correct': 16,
-    'incorrect': 4,
-    'next_question': 5
-}
-
-# Initialize players
-players = {
-    config['name']: Player(config['name'], config['btn_pin'], config['led_pin'])
-    for config in PLAYER_CONFIG
+# Initialize players 
+players: dict[str, Player] = {
+    'player1': Player('player1', btn_pin=0, led_pin=13),
+    'player2': Player('player2', btn_pin=1, led_pin=14),
+    'player3': Player('player3', btn_pin=2, led_pin=15),
 }
 
 # Initialize control buttons
-control_btns = {
-    name: ControlButton(name, pin)
-    for name, pin in CONTROL_BUTTONS.items()
+control_btns: dict[str, ControlButton] = {
+    'correct': ControlButton('correct', pin=16),
+    'incorrect': ControlButton('incorrect', pin=4),
+    'next_question': ControlButton('next_question', pin=5),
 }
 
 # Store button press events
-button_events = []
+button_events: list[str] = []
 
 # Global lockout state - when True, all player buttons are disabled
-global_lockout = False
+global_lockout: bool = False
 
 
 # Factory function to create player button handlers
 def create_player_handler(player: Player):
     """Creates an interrupt handler for a player button"""
-    def handler(pin):
+    def handler(pin: Pin) -> None:
         global button_events, global_lockout
         # Check lockouts - don't process if locked out
         if global_lockout or player.lockout:
@@ -79,9 +67,9 @@ def create_player_handler(player: Player):
 
 
 # Factory function to create control button handlers
-def create_control_handler(control_btn, reset_global_lockout=True, reset_player_lockout=False):
+def create_control_handler(control_btn: ControlButton, reset_global_lockout: bool = True, reset_player_lockout: bool = False):
     """Creates an interrupt handler for control buttons"""
-    def handler(pin):
+    def handler(pin: Pin) -> None:
         global button_events, global_lockout
         current_time = time.ticks_ms()
         if time.ticks_diff(current_time, control_btn.last_interrupt_time) > DEBOUNCE_TIME:
@@ -112,9 +100,9 @@ for btn in control_btns.values():
     btn.btn.irq(trigger=Pin.IRQ_RISING, handler=handler)
 
 # Get and clear button events
-def get_button_events():
+def get_button_events() -> list[str]:
     """Returns list of buttons that were pressed and clears the event queue"""
     global button_events
-    events = button_events.copy()
+    events: list[str] = button_events.copy()
     button_events = []
     return events
