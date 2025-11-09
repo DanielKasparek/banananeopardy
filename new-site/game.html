@@ -205,6 +205,86 @@ rel="stylesheet">
         .reset-btn:hover {
             background: #ffca3a;
         }
+
+        .winner-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f4d 100%);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .winner-screen.active {
+            display: flex;
+        }
+
+        .winner-content {
+            text-align: center;
+            animation: fadeInScale 0.8s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .winner-title {
+            font-size: 4rem;
+            background: linear-gradient(180deg, #ffffff 0%, #d69f4c 50%, #b8860b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 30px rgba(214, 159, 76, 0.8));
+        }
+
+        .winner-name {
+            font-size: 5rem;
+            color: #f4b41a;
+            font-family: "Impact";
+            margin-bottom: 20px;
+            text-shadow: 0 0 40px rgba(244, 180, 26, 0.8);
+        }
+
+        .winner-score {
+            font-size: 3rem;
+            color: #4ade80;
+            font-family: "Impact";
+            margin-bottom: 50px;
+        }
+
+        .play-again-btn {
+            font-family: 'Clarendon', sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0a0e27;
+            background: linear-gradient(180deg, #d69f4c 0%, #b8860b 100%);
+            border: none;
+            padding: 20px 60px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(214, 159, 76, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .play-again-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(214, 159, 76, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -246,7 +326,14 @@ rel="stylesheet">
   <button class="reset-btn" onclick="resetGame()">Reset Game</button>
 </div>
 
-      
+    <div class="winner-screen" id="winnerScreen">
+        <div class="winner-content">
+        <h2 class="winner-title">WINNER!</h2>
+        <div class="winner-name" id="winnerName"></div>
+        <div class="winner-score" id="winnerScore"></div>
+        <button class="play-again-btn" onclick="playAgain()">Play Again</button>
+        </div>
+    </div>
   </div>
 
 
@@ -379,6 +466,52 @@ rel="stylesheet">
         }
 
         initBoard();
+
+        function correctAnswer(player) {
+            if (!currentClue) return;
+            
+            const question = categories[currentClue.catIndex].questions[currentClue.row];
+            scores[player - 1] += question.value;
+            document.getElementById(`score${player}`).textContent = `$${scores[player - 1]}`;
+            
+            const clueDiv = document.querySelector(`[data-cat="${currentClue.catIndex}"][data-row="${currentClue.row}"]`);
+            clueDiv.classList.add('used');
+            
+            closeModal();
+            checkWinCondition();
+        }
+
+        function checkWinCondition() {
+            const allClues = document.querySelectorAll('.clue');
+            const usedClues = document.querySelectorAll('.clue.used');
+            
+            if (allClues.length === usedClues.length) {
+                setTimeout(() => {
+                    displayWinner();
+                }, 500);
+            }
+        }
+
+        function displayWinner() {
+            let maxScore = Math.max(...scores);
+            let winnerIndex = scores.indexOf(maxScore);
+            
+            const playerNames = [
+                localStorage.getItem('player1Name') || 'Player 1',
+                localStorage.getItem('player2Name') || 'Player 2',
+                localStorage.getItem('player3Name') || 'Player 3'
+            ];
+            
+            document.getElementById('winnerName').textContent = playerNames[winnerIndex];
+            document.getElementById('winnerScore').textContent = `$${maxScore}`;
+            document.getElementById('winnerScreen').classList.add('active');
+        }
+
+        function playAgain() {
+            document.getElementById('winnerScreen').classList.remove('active');
+            resetGame();
+            window.location.href = 'player-setup.html';
+        }
     </script>
 </body>
 </html>
