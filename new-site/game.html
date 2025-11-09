@@ -241,6 +241,7 @@ rel="stylesheet">
   </div>
 </div>
 
+<div id="countdown">Waiting for data...</div>
 
 <div class="reset-container">
   <button class="reset-btn" onclick="resetGame()">Reset Game</button>
@@ -252,6 +253,65 @@ rel="stylesheet">
 
 
     <script>
+        // Create WebSocket connection
+        const socket = new WebSocket('ws://localhost:8080');
+
+        let countdownInterval = null;
+
+        // Connection opened
+        socket.addEventListener('open', (event) => {
+            console.log('Connected to WebSocket server');
+        });
+
+        // Listen for messages
+        socket.addEventListener('message', (event) => {
+            console.log('Message from server:', event.data);
+            
+            // Start 5-second countdown when data is received
+            startCountdown();
+        });
+
+        // Handle errors
+        socket.addEventListener('error', (error) => {
+            console.error('WebSocket error:', error);
+        });
+
+        // Handle connection close
+        socket.addEventListener('close', (event) => {
+            console.log('Disconnected from WebSocket server');
+        });
+
+        function startCountdown() {
+            // Clear any existing countdown
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            let timeLeft = 5;
+            
+            // Update UI immediately
+            document.getElementById('countdown').textContent = timeLeft;
+            
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('countdown').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    console.log('Countdown finished!');
+                    // Do something when countdown ends
+                    onCountdownComplete();
+                }
+            }, 1000);
+        }
+
+        function onCountdownComplete() {
+            // Your code here when countdown finishes
+            console.log('Time\'s up!');
+            document.getElementById('countdown').textContent = 'Time\'s up!';
+        }
+
         const categories = [
             { name: "Going Bananas!", questions: [
                 { q: "This classic ice cream dessert features the yellow fruit halved lengthwise, topped with scoops of ice cream, sauces, whipped cream, and a cherry.", a: "What is a Banana Split??", value: 200 },
