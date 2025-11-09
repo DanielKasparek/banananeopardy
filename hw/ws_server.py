@@ -81,47 +81,88 @@ class WebSocketServer:
             cl.close()
             return
 
-        # Read the request first
+        # Check if it's a WebSocket or HTTP request by examining headers
+        is_websocket = False
         try:
-            cl.setblocking(False)
-            request = cl.recv(1024).decode('utf-8')
-            cl.setblocking(True)
+            # Create file object for reading
+            clr = cl.makefile("rwb", 0)
+            request_line = clr.readline()
+            
+            # Read headers to check for websocket upgrade
+            headers = {}
+            while True:
+                line = clr.readline()
+                if not line or line == b"\r\n":
+                    break
+                if b":" in line:
+                    h, v = [x.strip() for x in line.split(b":", 1)]
+                    headers[h.lower()] = v.lower()
+            
+            # Check if this is a websocket upgrade request
+            if (b"upgrade" in headers and b"websocket" in headers[b"upgrade"] and
+                b"sec-websocket-key" in headers):
+                is_websocket = True
+                
         except:
-            cl.close()
+            # If we can't read the request, close and return
+            try:
+                cl.close()
+            except:
+                pass
             return
 
-        # Check if it's a WebSocket upgrade request
-        if 'Upgrade: websocket' in request or 'upgrade: websocket' in request.lower():
+        if is_websocket:
+            # Handle websocket connection
             try:
-                websocket_helper.server_handshake(cl)
-                self._clients.append(
-                    self._make_client(
-                        WebSocketConnection(remote_addr, cl, self.remove_connection)
+                # We need to reconstruct the handshake process
+                webkey = headers.get(b"sec-websocket-key")
+                if webkey:
+                    from ubinascii import b2a_base64
+                    from uhashlib import sha1
+                    d = sha1(webkey)
+                    d.update(b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
+                    respkey = d.digest()
+                    respkey = b2a_base64(respkey)[:-1]
+                    
+                    cl.send(b"HTTP/1.1 101 Switching Protocols\r\n")
+                    cl.send(b"Upgrade: websocket\r\n")
+                    cl.send(b"Connection: Upgrade\r\n")
+                    cl.send(b"Sec-WebSocket-Accept: ")
+                    cl.send(respkey)
+                    cl.send(b"\r\n\r\n")
+                    
+                    self._clients.append(
+                        self._make_client(
+                            WebSocketConnection(remote_addr, cl, self.remove_connection)
+                        )
                     )
-                )
+                else:
+                    cl.close()
             except:
-                cl.close()
+                try:
+                    cl.close()
+                except:
+                    pass
         else:
-            # Regular HTTP request, serve webpage
-            self._serve_http_request(cl, request)
+            # Handle HTTP request - serve file
+            self._serve_http_file(cl, request_line, headers)
             return
 
     def _make_client(self, conn):
         return WebSocketClient(conn)
 
-    # Parse HTTP request and get the requested path
-    def _parse_http_request(self, request):
+    # Parse HTTP request line to get the requested path
+    def _parse_http_request(self, request_line):
         try:
             # Extract the path from the first line (e.g., "GET /path HTTP/1.1")
-            lines = request.split('\r\n')
-            if lines:
-                parts = lines[0].split(' ')
-                if len(parts) >= 2:
-                    path = parts[1]
-                    # Default to index.html for root path
-                    if path == '/' or path == '':
-                        path = '/index.html'
-                    return path
+            request_str = request_line.decode('utf-8') if isinstance(request_line, bytes) else request_line
+            parts = request_str.split(' ')
+            if len(parts) >= 2:
+                path = parts[1]
+                # Default to index.html for root path
+                if path == '/' or path == '':
+                    path = '/index.html'
+                return path
         except:
             pass
         return '/index.html'
@@ -153,9 +194,9 @@ class WebSocketServer:
         else:
             return 'application/octet-stream'
 
-    # Serve HTTP request from web folder
-    def _serve_http_request(self, sock, request):
-        path = self._parse_http_request(request)
+    # Serve HTTP file from web folder
+    def _serve_http_file(self, sock, request_line, headers):
+        path = self._parse_http_request(request_line)
         # Remove leading slash and construct file path in web folder
         file_path = 'web' + path
         
