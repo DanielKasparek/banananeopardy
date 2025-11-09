@@ -21,7 +21,7 @@ rel="stylesheet">
             min-height: 100vh;
             padding: 10px;
             position: relative;
-            overflow: hidden;
+            /* overflow: hidden; */
 
         }
 
@@ -48,15 +48,35 @@ rel="stylesheet">
             gap: 20px;
             margin-bottom: 30px;
             flex-wrap: wrap;
+            position: relative;
+            z-index: 1001;
         }
 
         .player {
             background: rgba(255, 255, 255, 0.1);
-            padding: 10px 40px;
+            padding: 20px 50px;
             border-radius: 10px;
             border: 2px solid #f4b41a;
             font-family: "Impact";
-            top: 25px;
+            top: 5px;
+            font-size: 2rem;
+            position: relative;
+            transition: border 0.3s ease;
+        }
+
+        .player.buzzed-red {
+            border: 5px solid #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+        }
+
+        .player.buzzed-green {
+            border: 5px solid #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.6);
+        }
+
+        .player.buzzed-blue {
+            border: 5px solid #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
         }
 
         .player h3 {
@@ -64,10 +84,12 @@ rel="stylesheet">
             margin-bottom: 5px;
         }
 
+        
         .score {
             font-size: 2rem;
             font-weight: bold;
             font-family: "Impact";
+            text-align: center;
         }
 
         .board {
@@ -487,13 +509,24 @@ rel="stylesheet">
             // Extract player number (player1 -> 1, player2 -> 2, etc.)
             const playerNum = parseInt(playerButton.replace('player', ''));
             buzzedPlayer = playerNum;
+
+            // Clear all buzz borders first
+            document.querySelectorAll('.player').forEach(player => {
+                player.classList.remove('buzzed-red', 'buzzed-green', 'buzzed-blue');
+            });
+            
+            // Add colored border to this player's score card
+            const buzzColors = ['buzzed-red', 'buzzed-green', 'buzzed-blue'];
+            document.querySelector('.player:nth-child(' + playerNum + ')').classList.add(buzzColors[playerNum - 1]);
             
             console.log(`Player ${playerNum} (${getPlayerName(playerNum)}) buzzed in!`);
-        }
+        }  
 
         function handleCorrectButton() {
             if (buzzedPlayer !== null) {
                 correctAnswer(buzzedPlayer);
+                // Clear buzz border
+                document.querySelector('.player:nth-child(' + buzzedPlayer + ')').classList.remove('buzzed-red', 'buzzed-green', 'buzzed-blue');
                 buzzedPlayer = null;
             } else {
                 console.warn('Correct button pressed but no player buzzed in');
@@ -503,6 +536,8 @@ rel="stylesheet">
         function handleIncorrectButton() {
             if (buzzedPlayer !== null) {
                 incorrectAnswer(buzzedPlayer);
+                // Clear buzz border
+                document.querySelector('.player:nth-child(' + buzzedPlayer + ')').classList.remove('buzzed-red', 'buzzed-green', 'buzzed-blue');
                 buzzedPlayer = null;
             } else {
                 console.warn('Incorrect button pressed but no player buzzed in');
@@ -516,6 +551,10 @@ rel="stylesheet">
             } else {
                 showAnswer();
             }
+            // Clear all buzz borders
+            document.querySelectorAll('.player').forEach(player => {
+                player.classList.remove('buzzed-red', 'buzzed-green', 'buzzed-blue');
+            });
             buzzedPlayer = null;
         }
 
