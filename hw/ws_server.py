@@ -74,98 +74,97 @@ class WebSocketServer:
         if len(self._clients) >= self._max_connections:
             # Maximum connections limit reached
             cl.setblocking(True)
-            cl.sendall("HTTP/1.1 503 Too many connections\n\n")
-            cl.sendall("\n")
-            # TODO: Make sure the data is sent before closing (Not biggest concern)
-            sleep(0.1)
+            try:
+                cl.sendall("HTTP/1.1 503 Too many connections\n\n")
+                cl.sendall("\n")
+                sleep(0.1)
+            except:
+                pass
             cl.close()
             return
 
-        # Check if it's a WebSocket or HTTP request by examining headers
+        # Set a timeout to prevent hanging
+        cl.settimeout(2.0)
+        
+        # Read and parse the HTTP request to determine type
         is_websocket = False
+        request_path = '/'
+        webkey = None
+        
         try:
-            # Create file object for reading
             clr = cl.makefile("rwb", 0)
+            # Read request line
             request_line = clr.readline()
+            if request_line:
+                # Parse request path
+                parts = request_line.decode('utf-8').split(' ')
+                if len(parts) >= 2:
+                    request_path = parts[1]
             
-            # Read headers to check for websocket upgrade
-            headers = {}
+            # Read headers
             while True:
                 line = clr.readline()
                 if not line or line == b"\r\n":
                     break
                 if b":" in line:
                     h, v = [x.strip() for x in line.split(b":", 1)]
-                    headers[h.lower()] = v.lower()
-            
-            # Check if this is a websocket upgrade request
-            if (b"upgrade" in headers and b"websocket" in headers[b"upgrade"] and
-                b"sec-websocket-key" in headers):
-                is_websocket = True
-                
+                    if h.lower() == b"upgrade" and b"websocket" in v.lower():
+                        is_websocket = True
+                    if h == b"Sec-WebSocket-Key":
+                        webkey = v
         except:
-            # If we can't read the request, close and return
+            # Error reading request, close connection
             try:
                 cl.close()
             except:
                 pass
             return
 
-        if is_websocket:
-            # Handle websocket connection
+        # Handle based on request type
+        if is_websocket and webkey:
+            # WebSocket connection
             try:
-                # We need to reconstruct the handshake process
-                webkey = headers.get(b"sec-websocket-key")
-                if webkey:
-                    from ubinascii import b2a_base64
-                    from uhashlib import sha1
-                    d = sha1(webkey)
-                    d.update(b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
-                    respkey = d.digest()
-                    respkey = b2a_base64(respkey)[:-1]
-                    
-                    cl.send(b"HTTP/1.1 101 Switching Protocols\r\n")
-                    cl.send(b"Upgrade: websocket\r\n")
-                    cl.send(b"Connection: Upgrade\r\n")
-                    cl.send(b"Sec-WebSocket-Accept: ")
-                    cl.send(respkey)
-                    cl.send(b"\r\n\r\n")
-                    
-                    self._clients.append(
-                        self._make_client(
-                            WebSocketConnection(remote_addr, cl, self.remove_connection)
-                        )
+                from ubinascii import b2a_base64
+                from uhashlib import sha1
+                
+                d = sha1(webkey)
+                d.update(b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
+                respkey = d.digest()
+                respkey = b2a_base64(respkey)[:-1]
+                
+                cl.send(b"HTTP/1.1 101 Switching Protocols\r\n")
+                cl.send(b"Upgrade: websocket\r\n")
+                cl.send(b"Connection: Upgrade\r\n")
+                cl.send(b"Sec-WebSocket-Accept: ")
+                cl.send(respkey)
+                cl.send(b"\r\n\r\n")
+                
+                cl.settimeout(None)  # Remove timeout for websocket
+                self._clients.append(
+                    self._make_client(
+                        WebSocketConnection(remote_addr, cl, self.remove_connection)
                     )
-                else:
-                    cl.close()
+                )
             except:
                 try:
                     cl.close()
                 except:
                     pass
         else:
-            # Handle HTTP request - serve file
-            self._serve_http_file(cl, request_line, headers)
-            return
+            # HTTP request - serve file
+            try:
+                self._serve_file_from_path(cl, request_path)
+            except:
+                pass
+            try:
+                cl.close()
+            except:
+                pass
 
     def _make_client(self, conn):
         return WebSocketClient(conn)
 
-    # Parse HTTP request line to get the requested path
-    def _parse_http_request(self, request_line):
-        try:
-            # Extract the path from the first line (e.g., "GET /path HTTP/1.1")
-            request_str = request_line.decode('utf-8') if isinstance(request_line, bytes) else request_line
-            parts = request_str.split(' ')
-            if len(parts) >= 2:
-                path = parts[1]
-                # Default to index.html for root path
-                if path == '/' or path == '':
-                    path = '/index.html'
-                return path
-        except:
-            pass
-        return '/index.html'
+
 
     # Get content type based on file extension
     def _get_content_type(self, filename):
@@ -194,11 +193,14 @@ class WebSocketServer:
         else:
             return 'application/octet-stream'
 
-    # Serve HTTP file from web folder
-    def _serve_http_file(self, sock, request_line, headers):
-        path = self._parse_http_request(request_line)
-        # Remove leading slash and construct file path in web folder
-        file_path = 'web' + path
+    # Serve file based on request path
+    def _serve_file_from_path(self, sock, request_path):
+        # Clean up path and default to index.html
+        if request_path == '/' or request_path == '':
+            request_path = '/index.html'
+        
+        # Remove leading slash and construct file path
+        file_path = 'web' + request_path
         
         try:
             # Check if file exists
@@ -228,18 +230,15 @@ class WebSocketServer:
                 with open(file_path, "r") as f:
                     for line in f:
                         sock.sendall(line)
-        except OSError as e:
-            # File not found or error reading file
+        except OSError:
+            # File not found, send 404
             try:
                 sock.sendall("HTTP/1.1 404 Not Found\nConnection: close\nServer: piMI\nContent-Type: text/html\n\n")
-                sock.sendall("<html><body><h1>404 Not Found</h1><p>The requested file was not found.</p></body></html>")
+                sock.sendall("<html><body><h1>404 Not Found</h1><p>File not found: {}</p></body></html>".format(file_path))
             except:
                 pass
-        
-        try:
-            sock.close()
-        except:
-            pass
+
+
 
     # Stop the server
     def stop(self):
