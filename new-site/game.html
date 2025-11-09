@@ -21,6 +21,7 @@ rel="stylesheet">
             min-height: 100vh;
             padding: 10px;
             position: relative;
+            overflow: hidden;
 
         }
 
@@ -51,9 +52,11 @@ rel="stylesheet">
 
         .player {
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px 30px;
+            padding: 10px 40px;
             border-radius: 10px;
             border: 2px solid #f4b41a;
+            font-family: "Impact";
+            top: 25px;
         }
 
         .player h3 {
@@ -64,6 +67,7 @@ rel="stylesheet">
         .score {
             font-size: 2rem;
             font-weight: bold;
+            font-family: "Impact";
         }
 
         .board {
@@ -75,12 +79,12 @@ rel="stylesheet">
 
         .category {
             background: #060847;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             border: 3px solid #f4b41a;
             border-radius: 5px;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.8rem;
             text-transform: uppercase;
             color: #FFFFFF;
             font-family: "Impact";
@@ -88,13 +92,13 @@ rel="stylesheet">
 
         .clue {
             background: #060847;
-            padding: 15px 10px;
+            padding: 30px 40px;
             text-align: center;
             border: 3px solid #f4b41a;
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 3rem;
+            font-size: 2rem;
             font-weight: bold;
             color: #f4b41a;
             font-family: "Impact";
@@ -183,7 +187,7 @@ rel="stylesheet">
             transform: translateY(0);
         }
 
-        reset-container {
+        .reset-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -192,15 +196,14 @@ rel="stylesheet">
 
 
         .reset-btn {
-            margin-top: 0;
-            background: #ef4444;
+            background: #fcfcfc8c;
             padding: 10px 25px;
             font-size: 1rem;
             float: right;
         }
 
         .reset-btn:hover {
-            background: #dc2626;
+            background: #ffca3a;
         }
     </style>
 </head>
@@ -250,47 +253,47 @@ rel="stylesheet">
 
     <script>
         const categories = [
-            { name: "Science", questions: [
-                { q: "This planet is known as the Red Planet", a: "What is Mars?", value: 200 },
-                { q: "H2O is the chemical formula for this", a: "What is water?", value: 400 },
-                { q: "This is the powerhouse of the cell", a: "What is the mitochondria?", value: 600 },
-                { q: "This scientist developed the theory of relativity", a: "Who is Albert Einstein?", value: 800 },
-                { q: "This is the speed of light in meters per second", a: "What is 299,792,458 m/s?", value: 1000 }
+            { name: "Going Bananas!", questions: [
+                { q: "This classic ice cream dessert features the yellow fruit halved lengthwise, topped with scoops of ice cream, sauces, whipped cream, and a cherry.", a: "What is a Banana Split??", value: 200 },
+                { q: "Known for their love of bananas and chaotic energy, these tiny henchmen serve Gru with enthusiasm.", a: "What is a Minion?", value: 400 },
+                { q: "This 1990s animated character is a mischievous primate who loves to steal these yellow fruits.", a: "Who is the Curious George?", value: 600 },
+                { q: "Banana bread became popular during this economic crisis when housewives didn't want to waste overripe fruit.", a: "What is Banana Bread?", value: 800 },
+                { q: "Bananas are naturally curved because they grow toward this, the opposite direction of gravity.", a: "What is the Sun (or Sunlight)?", value: 1000 }
             ]},
-            { name: "History", questions: [
-                { q: "This wall fell in 1989", a: "What is the Berlin Wall?", value: 200 },
-                { q: "This year saw the end of World War II", a: "What is 1945?", value: 400 },
-                { q: "This empire was ruled by Julius Caesar", a: "What is the Roman Empire?", value: 600 },
-                { q: "This ship sank in 1912", a: "What is the Titanic?", value: 800 },
-                { q: "This document was signed in 1776", a: "What is the Declaration of Independence?", value: 1000 }
+            { name: "‘M’utual of ‘O’maha", questions: [
+                { q: "This urgent cry is shouted when someone has fallen off a ship and into the water.", a: "What is Man Overboard?", value: 200 },
+                { q: "Burning this substance means “to work late into the night”, coming from the days when people used lamps instead of electricity.", a: "What is Midnight Oil?", value: 400 },
+                { q: "This Latin phrase meaning \"mode of operating\" describes a criminal's typical method of committing crimes.", a: "What is Modus Operandi?", value: 600 },
+                { q: "This 2017 Future hit told listeners to “chase a check” and featured a haunting flute sample from the 1970 song “Prison Song.", a: "What is Mask Off?", value: 800 },
+                { q: "This is a prepaid paper form of payment, similar in appearance to a check.", a: "What is a Money Order?", value: 1000 }
             ]},
-            { name: "Geography", questions: [
-                { q: "This is the capital of France", a: "What is Paris?", value: 200 },
-                { q: "This is the largest ocean on Earth", a: "What is the Pacific Ocean?", value: 400 },
-                { q: "THIS IS THE TALLEST MOUNTAIN", a: "What is Mount Everest?", value: 600 },
-                { q: "This river is the longest in the world", a: "What is the Nile River?", value: 800 },
-                { q: "This is the smallest country in the world", a: "What is Vatican City?", value: 1000 }
+            { name: "Conagra’s Greatest Hits", questions: [
+                { q: "This meat stick snack with a rhyming name, known for its spicy flavor and iconic red packaging, has been a popular grab-and-go treat since the 1920s.", a: "What are Slim Jim's?", value: 200 },
+                { q: "Introduced in 1950, this Conagra brand’s name hints at its European inspiration and creamy chocolate taste.", a: "What is Swiss Miss?", value: 400 },
+                { q: "This Conagra brand is famous for microwave popcorn sold in red, yellow, and blue striped packaging.", a: "What is ACT II?", value: 600 },
+                { q: "In 2000, Conagra acquired this brand known for its premium cooking oils and specialty foods.", a: "What is PAM?", value: 800 },
+                { q: "Originally made with real cream, this Conagra product is known for its pressurized can and convenient dessert topping.", a: "What is Reddi-Wip?", value: 1000 }
             ]},
-            { name: "Pop Culture", questions: [
-                { q: "This streaming service is known for Stranger Things", a: "What is Netflix?", value: 200 },
-                { q: "This artist sang 'Thriller'", a: "Who is Michael Jackson?", value: 400 },
-                { q: "This movie features a character named Jack Dawson", a: "What is Titanic?", value: 600 },
-                { q: "This band is known as the Fab Four", a: "Who are The Beatles?", value: 800 },
-                { q: "This superhero is also known as Bruce Wayne", a: "Who is Batman?", value: 1000 }
+            { name: "Fitness Freaks", questions: [
+                { q: "In the animal kingdom, this phrase means the best-adapted creatures survive to reproduce — not who can bench the most.", a: "What is Survival of the Fittest?", value: 200 },
+                { q: "“Hot girl walk” became a 2022 TikTok trend encouraging people to take long walks while blasting this rapper’s empowering music.", a: "Who is Megan Thee Stallion?", value: 400 },
+                { q: "This YouTuber turned boxing champion went from diss tracks and apology videos to a fitness mogul with his own supplement line, Prime Energy.", a: "Who is Logan Paul?", value: 600 },
+                { q: "This cult-favorite app lets users share running routes and accidentally reveal secret military bases.", a: "What is Strava?", value: 800 },
+                { q: "The ratio of this nutrient to calories can influence how fit your muscles are and how quickly they recover.", a: "What is Protein?", value: 1000 }
             ]},
-            { name: "Sports", questions: [
-                { q: "This sport is known as 'America's pastime'", a: "What is baseball?", value: 200 },
-                { q: "The Olympics are held every this many years", a: "What is 4 years?", value: 400 },
-                { q: "This athlete has won the most Olympic gold medals", a: "Who is Michael Phelps?", value: 600 },
-                { q: "This is the only sport played on the moon", a: "What is golf?", value: 800 },
-                { q: "This country has won the most FIFA World Cups", a: "What is Brazil?", value: 1000 }
+            { name: "Cornhusker State", questions: [
+                { q: "The Henry Doorly Zoo in Omaha features the world's largest indoor desert under this type of geodesic structure.", a: "What is a Dome?", value: 200 },
+                { q: "This \"amber waves of grain\" cereal crop covers over 9 million acres of Nebraska farmland.", a: "What is Wheat?", value: 400 },
+                { q: "The Nebraska State Capitol building, completed in 1932, is topped with this golden figure.", a: "What is the Sower?", value: 600 },
+                { q: "This legendary Nebraska coach won 255 games and 3 national championships before becoming a U.S. Congressman.", a: "Who is Tom Osborne?", value: 800 },
+                { q: "This sweet drink invented in Nebraska in the 1920s comes in a distinctive glass bottle and is still mixed by hand.", a: "What is Kool-Aid?", value: 1000 }
             ]},
-            { name: "Food & Drink", questions: [
-                { q: "This fruit is known for keeping doctors away", a: "What is an apple?", value: 200 },
-                { q: "This Italian dish is made with dough, sauce, and cheese", a: "What is pizza?", value: 400 },
-                { q: "This beverage is made from fermented grapes", a: "What is wine?", value: 600 },
-                { q: "This spice is the most expensive by weight", a: "What is saffron?", value: 800 },
-                { q: "This country is the origin of sushi", a: "What is Japan?", value: 1000 }
+            { name: "Gallup Strengths", questions: [
+                { q: "People with this strength can sense what’s going on emotionally in a group and naturally provide support.", a: "What is an Empathy?", value: 200 },
+                { q: "Individuals with this strength are drawn to variety and thrive in situations that require flexibility.", a: "What is Adaptability?", value: 400 },
+                { q: "This strength reflects a natural focus on finishing tasks and following through until completion.", a: "What is Achiever?", value: 600 },
+                { q: "People with this strength are excellent at persuading others and energizing teams with their enthusiasm.", a: "What is Communication?", value: 800 },
+                { q: "People with this strength energize teams by recognizing each person’s unique abilities and inspiring them to reach their potential.", a: "What is Individualization?", value: 1000 }
             ]}
         ];
 
