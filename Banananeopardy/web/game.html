@@ -194,6 +194,69 @@ rel="stylesheet">
             z-index: 100;
         }
 
+        .dev-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: rgba(6, 8, 71, 0.95);
+            border: 2px solid #f4b41a;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 200px;
+        }
+
+        .dev-controls h4 {
+            color: #f4b41a;
+            margin-bottom: 5px;
+            font-size: 1rem;
+            text-align: center;
+            font-family: "Impact";
+        }
+
+        .dev-btn {
+            background: #4ade80;
+            color: #060847;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .dev-btn:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .dev-btn.buzz {
+            background: #60a5fa;
+        }
+
+        .dev-btn.buzz:hover {
+            background: #3b82f6;
+        }
+
+        .dev-btn.incorrect {
+            background: #ef4444;
+        }
+
+        .dev-btn.incorrect:hover {
+            background: #dc2626;
+        }
+
+        .dev-btn.next {
+            background: darkgray;
+        }
+
+        .dev-btn.next:hover {
+            background: gray;
+        }
 
         .reset-btn {
             background: #fcfcfc8c;
@@ -296,13 +359,6 @@ rel="stylesheet">
     <div class="modal-content">
         <div class="question" id="question"></div>
         <div class="answer" id="answer"></div>
-        <div class="buttons">
-            <button onclick="showAnswer()">Show Answer</button>
-            <button onclick="correctAnswer(1)">Player 1 Correct</button>
-            <button onclick="correctAnswer(2)">Player 2 Correct</button>
-            <button onclick="correctAnswer(3)">Player 3 Correct</button>
-            <button onclick="closeModal()">Close</button>
-        </div>
     </div>
 </div>
 
@@ -322,6 +378,16 @@ rel="stylesheet">
 </div>
 
 <div id="countdown">Waiting for data...</div>
+
+<div class="dev-controls">
+    <h4>Dev Controls</h4>
+    <button class="dev-btn buzz" onclick="emulateButton('player1')">P1 Buzzed</button>
+    <button class="dev-btn buzz" onclick="emulateButton('player2')">P2 Buzzed</button>
+    <button class="dev-btn buzz" onclick="emulateButton('player3')">P3 Buzzed</button>
+    <button class="dev-btn incorrect" onclick="emulateButton('incorrect')">Incorrect Answer</button>
+    <button class="dev-btn next" onclick="emulateButton('next_question')">Next Question</button>
+    <button class="dev-btn" onclick="emulateButton('correct')">Correct Answer</button>
+</div>
 
 <div class="reset-container">
   <button class="reset-btn" onclick="resetGame()">Reset Game</button>
@@ -405,6 +471,12 @@ rel="stylesheet">
                         console.warn('Unknown button:', button);
                 }
             });
+        }
+
+        // Emulate button press for dev testing
+        function emulateButton(buttonName) {
+            console.log('Emulating button:', buttonName);
+            handleButtonEvents([buttonName]);
         }
 
         // Track which player buzzed in (for use with correct button)
