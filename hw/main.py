@@ -4,7 +4,7 @@ import json
 # Allow for connection to wireless
 from wireless import connectWireless
 # Allow for GPIO access
-from gpio import get_button_events
+from gpio import get_button_events, update_leds
 
 # Original code for web socket server by Florin Dragan licensed under the MIT License: https://gitlab.com/florindragan/raspberry_pico_w_websocket/-/blob/main/LICENSE
 # MIT License
@@ -64,6 +64,9 @@ server.start()
 async def main():
     # "Loop"
     while True:
+        # Update LED states based on timers
+        update_leds()
+        
         # Get button events from interrupt handlers
         button_events = get_button_events()
         
@@ -72,5 +75,5 @@ async def main():
             data = json.dumps({"buttons": button_events})
             server.process_all(data)
             print(f"Buttons pressed: {button_events}")
-        
+        await sleep(0.05)  # Check for events every 50ms
 run(main())

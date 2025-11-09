@@ -11,10 +11,24 @@ player3_btn = Pin(2, Pin.IN, Pin.PULL_UP)
 correct_btn = Pin(16, Pin.IN, Pin.PULL_UP)
 incorrect_btn = Pin(4, Pin.IN, Pin.PULL_UP)
 next_question_btn = Pin(5, Pin.IN, Pin.PULL_UP)
+
+# Initialize LED outputs for each player
+player1_led = Pin(13, Pin.OUT, None)
+player2_led = Pin(14, Pin.OUT, None)
 player3_led = Pin(15, Pin.OUT, None)
 
 # Store button press events
 button_events = []
+
+# LED timer tracking (stores the time when LED should turn off, 0 means off)
+led_timers = {
+    'player1': 0,
+    'player2': 0,
+    'player3': 0
+}
+
+# LED duration in milliseconds (5 seconds)
+LED_DURATION = 5000
 
 # Debounce time in milliseconds
 DEBOUNCE_TIME = 50
@@ -31,29 +45,39 @@ last_interrupt_time = {
 
 # Interrupt handler for player 1 button
 def player1_handler(pin):
-    global button_events, last_interrupt_time
+    global button_events, last_interrupt_time, led_timers
     current_time = time.ticks_ms()
     if time.ticks_diff(current_time, last_interrupt_time['player1']) > DEBOUNCE_TIME:
         button_events.append('player1')
         last_interrupt_time['player1'] = current_time
+        # Turn on LED for 5 seconds if not already on
+        if led_timers['player1'] == 0:
+            player1_led.value(1)
+            led_timers['player1'] = time.ticks_add(current_time, LED_DURATION)
 
 # Interrupt handler for player 2 button
 def player2_handler(pin):
-    global button_events, last_interrupt_time
+    global button_events, last_interrupt_time, led_timers
     current_time = time.ticks_ms()
     if time.ticks_diff(current_time, last_interrupt_time['player2']) > DEBOUNCE_TIME:
         button_events.append('player2')
         last_interrupt_time['player2'] = current_time
+        # Turn on LED for 5 seconds if not already on
+        if led_timers['player2'] == 0:
+            player2_led.value(1)
+            led_timers['player2'] = time.ticks_add(current_time, LED_DURATION)
 
 # Interrupt handler for player 3 button
 def player3_handler(pin):
-    global button_events, last_interrupt_time
+    global button_events, last_interrupt_time, led_timers
     current_time = time.ticks_ms()
     if time.ticks_diff(current_time, last_interrupt_time['player3']) > DEBOUNCE_TIME:
         button_events.append('player3')
         last_interrupt_time['player3'] = current_time
-        # Toggle player 3 LED
-        player3_led.value(not player3_led.value())
+        # Turn on LED for 5 seconds if not already on
+        if led_timers['player3'] == 0:
+            player3_led.value(1)
+            led_timers['player3'] = time.ticks_add(current_time, LED_DURATION)
 
 # Interrupt handler for correct button
 def correct_handler(pin):
@@ -94,4 +118,25 @@ def get_button_events():
     events = button_events.copy()
     button_events = []
     return events
+
+# Update LED states based on timers
+def update_leds():
+    """Check LED timers and turn off LEDs when their time expires"""
+    global led_timers
+    current_time = time.ticks_ms()
+    
+    # Check player 1 LED
+    if led_timers['player1'] != 0 and time.ticks_diff(current_time, led_timers['player1']) >= 0:
+        player1_led.value(0)
+        led_timers['player1'] = 0
+    
+    # Check player 2 LED
+    if led_timers['player2'] != 0 and time.ticks_diff(current_time, led_timers['player2']) >= 0:
+        player2_led.value(0)
+        led_timers['player2'] = 0
+    
+    # Check player 3 LED
+    if led_timers['player3'] != 0 and time.ticks_diff(current_time, led_timers['player3']) >= 0:
+        player3_led.value(0)
+        led_timers['player3'] = 0
  
