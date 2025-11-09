@@ -4,7 +4,7 @@ import json
 # Allow for connection to wireless
 from wireless import connectWireless
 # Allow for GPIO access
-from gpio import get_button_presses
+from gpio import get_button_events
 
 # Original code for web socket server by Florin Dragan licensed under the MIT License: https://gitlab.com/florindragan/raspberry_pico_w_websocket/-/blob/main/LICENSE
 # MIT License
@@ -64,16 +64,13 @@ server.start()
 async def main():
     # "Loop"
     while True:
-        # Poll button states
-        button_presses = get_button_presses()
+        # Get button events from interrupt handlers
+        button_events = get_button_events()
         
         # Send button press events to all connected clients
-        pressed_buttons = [btn for btn, pressed in button_presses.items() if pressed]
-        if pressed_buttons:
-            data = json.dumps({"buttons": pressed_buttons})
+        if button_events:
+            data = json.dumps({"buttons": button_events})
             server.process_all(data)
-        else:
-            server.process_all("")
+            print(f"Buttons pressed: {button_events}")
         
-        await sleep(0.05)  # Poll every 50ms for responsive input
 run(main())
