@@ -300,6 +300,17 @@ rel="stylesheet">
         let scores = [0, 0, 0];
         let currentClue = null;
 
+        // Load player names from localStorage
+        window.addEventListener('load', () => {
+            const player1Name = localStorage.getItem('player1Name') || 'Player 1';
+            const player2Name = localStorage.getItem('player2Name') || 'Player 2';
+            const player3Name = localStorage.getItem('player3Name') || 'Player 3';
+            
+            document.querySelector('.player:nth-child(1) h3').textContent = player1Name;
+            document.querySelector('.player:nth-child(2) h3').textContent = player2Name;
+            document.querySelector('.player:nth-child(3) h3').textContent = player3Name;
+        });
+
         function initBoard() {
             const board = document.getElementById('board');
             board.innerHTML = '';
