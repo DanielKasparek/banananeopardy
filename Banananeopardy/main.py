@@ -4,6 +4,7 @@ import json
 
 # Allow for connection to wireless
 from wireless import connectWireless
+from secrets import SSID, PASS
 
 # Allow for GPIO access
 from gpio import get_button_events
@@ -64,6 +65,7 @@ if enable_21.value() == 1:
 
 # Connect to WiFi network
 ip = connectWireless()
+print(f"AP Available!\nSSID: {SSID}\nPASSWORD: {PASS}\nIP Address: {ip}")
 
 # Configure and start server
 server = AppServer()
