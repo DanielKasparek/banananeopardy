@@ -75,5 +75,5 @@ async def main():
             data = json.dumps({"buttons": button_events})
             server.process_all(data)
             print(f"Buttons pressed: {button_events}")
-        await sleep(0.05)  # Check for events every 50ms
+        await sleep(0.025)  # Check for events every 25ms
 run(main())
