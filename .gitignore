@@ -1,5 +1,4 @@
 # Custom
-node_modules/
 secrets.py
 
 # Byte-compiled / optimized / DLL files
