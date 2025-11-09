@@ -340,63 +340,119 @@ rel="stylesheet">
 
 
     <script>
-        // Create WebSocket connection
-        const socket = new WebSocket('ws://localhost:8080');
+        let socket = null;
+        let answerShown = false;
 
-        let countdownInterval = null;
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            console.log('Connecting to:', wsUrl);
+            socket = new WebSocket(wsUrl);
 
-        // Connection opened
-        socket.addEventListener('open', (event) => {
-            console.log('Connected to WebSocket server');
-        });
+            // Connection opened
+            socket.addEventListener('open', (event) => {
+                console.log('Connected to WebSocket server');
+            });
 
-        // Listen for messages
-        socket.addEventListener('message', (event) => {
-            console.log('Message from server:', event.data);
-            
-            // Start 5-second countdown when data is received
-            startCountdown();
-        });
-
-        // Handle errors
-        socket.addEventListener('error', (error) => {
-            console.error('WebSocket error:', error);
-        });
-
-        // Handle connection close
-        socket.addEventListener('close', (event) => {
-            console.log('Disconnected from WebSocket server');
-        });
-
-        function startCountdown() {
-            // Clear any existing countdown
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-            }
-            
-            let timeLeft = 5;
-            
-            // Update UI immediately
-            document.getElementById('countdown').textContent = timeLeft;
-            
-            countdownInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('countdown').textContent = timeLeft;
+            // Listen for messages
+            socket.addEventListener('message', (event) => {
+                console.log('Message from server:', event.data);
                 
-                if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                    console.log('Countdown finished!');
-                    // Do something when countdown ends
-                    onCountdownComplete();
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.buttons && Array.isArray(data.buttons)) {
+                        handleButtonEvents(data.buttons);
+                    }
+                } catch (error) {
+                    console.error('Error parsing WebSocket message:', error);
                 }
-            }, 1000);
+            });
+
+            // Handle errors
+            socket.addEventListener('error', (error) => {
+                console.error('WebSocket error:', error);
+            });
+
+            // Handle connection close
+            socket.addEventListener('close', (event) => {
+                console.log('Disconnected from WebSocket server');
+                updateConnectionStatus(false);
+                // Try to reconnect after 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            });
         }
 
-        function onCountdownComplete() {
-            // Your code here when countdown finishes
-            console.log('Time\'s up!');
-            document.getElementById('countdown').textContent = 'Time\'s up!';
+        function handleButtonEvents(buttons) {
+            buttons.forEach(button => {
+                console.log('Button pressed:', button);
+                
+                switch(button) {
+                    case 'player1':
+                    case 'player2':
+                    case 'player3':
+                        handlePlayerBuzz(button);
+                        break;
+                    case 'correct':
+                        handleCorrectButton();
+                        break;
+                    case 'incorrect':
+                        handleIncorrectButton();
+                        break;
+                    case 'next_question':
+                        handleNextQuestionButton();
+                        break;
+                    default:
+                        console.warn('Unknown button:', button);
+                }
+            });
+        }
+
+        // Track which player buzzed in (for use with correct button)
+        let buzzedPlayer = null;
+
+        function handlePlayerBuzz(playerButton) {
+            // Extract player number (player1 -> 1, player2 -> 2, etc.)
+            const playerNum = parseInt(playerButton.replace('player', ''));
+            buzzedPlayer = playerNum;
+            
+            console.log(`Player ${playerNum} (${getPlayerName(playerNum)}) buzzed in!`);
+        }
+
+        function handleCorrectButton() {
+            if (buzzedPlayer !== null) {
+                correctAnswer(buzzedPlayer);
+                buzzedPlayer = null;
+            } else {
+                console.warn('Correct button pressed but no player buzzed in');
+            }
+        }
+
+        function handleIncorrectButton() {
+            if (buzzedPlayer !== null) {
+                incorrectAnswer(buzzedPlayer);
+                buzzedPlayer = null;
+            } else {
+                console.warn('Incorrect button pressed but no player buzzed in');
+            }
+        }
+
+        function handleNextQuestionButton() {
+            // Close current modal and reset buzzer state
+            if (answerShown) {
+                closeModal();
+            } else {
+                showAnswer();
+            }
+            buzzedPlayer = null;
+        }
+
+        function getPlayerName(playerNum) {
+            const names = [
+                localStorage.getItem('player1Name') || 'Player 1',
+                localStorage.getItem('player2Name') || 'Player 2',
+                localStorage.getItem('player3Name') || 'Player 3'
+            ];
+            return names[playerNum - 1];
         }
 
         const categories = [
@@ -496,25 +552,25 @@ rel="stylesheet">
         }
 
         function showAnswer() {
+            answerShown = true;
             document.getElementById('answer').style.display = 'block';
         }
 
-        function correctAnswer(player) {
+        function incorrectAnswer(player) {
             if (!currentClue) return;
             
             const question = categories[currentClue.catIndex].questions[currentClue.row];
-            scores[player - 1] += question.value;
+            scores[player - 1] -= question.value;
             document.getElementById(`score${player}`).textContent = `$${scores[player - 1]}`;
             
             const clueDiv = document.querySelector(`[data-cat="${currentClue.catIndex}"][data-row="${currentClue.row}"]`);
             clueDiv.classList.add('used');
-            
-            closeModal();
         }
 
         function closeModal() {
             document.getElementById('modal').classList.remove('active');
             currentClue = null;
+            answerShown = false;
         }
 
         function resetGame() {
@@ -537,7 +593,7 @@ rel="stylesheet">
             const clueDiv = document.querySelector(`[data-cat="${currentClue.catIndex}"][data-row="${currentClue.row}"]`);
             clueDiv.classList.add('used');
             
-            closeModal();
+            showAnswer();
             checkWinCondition();
         }
 
@@ -572,6 +628,9 @@ rel="stylesheet">
             resetGame();
             window.location.href = 'player-setup.html';
         }
+
+        // Start WebSocket connection when page loads
+        connectWebSocket();
     </script>
 </body>
 </html>
