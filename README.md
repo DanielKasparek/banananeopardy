@@ -6,6 +6,8 @@ The hardware of the project contains buzzers in the shape of bananas to have an 
 
 This repository contains the Pico-side WebSocket server and a web client (in the `web/` folder) used to play a Jeopardy-like buzzer game.
 
+![Banananeopardy HW](Banananeopardy.jpg)
+
 ## Features
 
 - WebSocket server that broadcasts button (buzzer) events to connected clients.
@@ -18,6 +20,13 @@ This repository contains the Pico-side WebSocket server and a web client (in the
 2. Adam Messman - Materials Expert
 3. Maitreyi Purandare - Creative Lead
 4. Blaine Traudt - Hardware Integrator
+
+## Tech Stack
+
+- Python (Micropython)
+- HTML
+- CSS
+- JS
 
 ## Project layout
 
