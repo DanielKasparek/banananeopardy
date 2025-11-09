@@ -1,8 +1,10 @@
 # Async code inspired by Digikey youtube video: https://youtu.be/5VLvmA__2v0 and post: https://www.digikey.com/en/maker/projects/getting-started-with-asyncio-in-micropython-raspberry-pi-pico/110b4243a2f544b6af60411a85f0437c
 from uasyncio import sleep, run
 import json
+
 # Allow for connection to wireless
 from wireless import connectWireless
+
 # Allow for GPIO access
 from gpio import get_button_events
 
@@ -66,10 +68,12 @@ async def main():
     while True:
         # Get button events from interrupt handlers
         button_events = get_button_events()
-        
+
         # Send button press events to all connected clients
         if button_events:
             data = json.dumps({"buttons": button_events})
             server.process_all(data)
             print(f"Buttons pressed: {button_events}")
+
+
 run(main())

@@ -30,6 +30,7 @@ from websocket import websocket
 class ClientClosedError(Exception):
     pass
 
+
 # Class for the actual connection to client
 
 

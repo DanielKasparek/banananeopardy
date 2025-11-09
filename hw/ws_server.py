@@ -42,6 +42,7 @@ class WebSocketClient:
     def parse(self):
         pass
 
+
 # Class definition of server?
 
 
@@ -87,8 +88,11 @@ class WebSocketServer:
             self._serve_page(cl, self._page)
             return
 
-        self._clients.append(self._make_client(
-            WebSocketConnection(remote_addr, cl, self.remove_connection)))
+        self._clients.append(
+            self._make_client(
+                WebSocketConnection(remote_addr, cl, self.remove_connection)
+            )
+        )
 
     def _make_client(self, conn):
         return WebSocketClient(conn)
@@ -97,11 +101,12 @@ class WebSocketServer:
     def _serve_page(self, sock, page):
         try:
             sock.sendall(
-                'HTTP/1.1 200 OK\nConnection: close\nServer: piMI\nContent-Type: text/html\n')
+                "HTTP/1.1 200 OK\nConnection: close\nServer: piMI\nContent-Type: text/html\n"
+            )
             length = os.stat(page)[6]
-            sock.sendall('Content-Length: {}\n\n'.format(length))
+            sock.sendall("Content-Length: {}\n\n".format(length))
             # Process page by lines to avoid large strings
-            with open(page, 'r') as f:
+            with open(page, "r") as f:
                 for line in f:
                     sock.sendall(line)
         except OSError:

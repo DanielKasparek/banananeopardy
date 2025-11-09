@@ -1,7 +1,9 @@
 # Enable wireless support
 from network import WLAN
+
 # Enable wait timer
 from time import sleep
+
 # Get secrets
 from secrets import SSID, PASS
 
@@ -24,7 +26,7 @@ def connectWireless():
 
     # If improper connection or never reached
     if wlan.status() != 3:
-        raise RuntimeError('network connection failed')
+        raise RuntimeError("network connection failed")
     else:
         status = wlan.ifconfig()
         # Return IP
