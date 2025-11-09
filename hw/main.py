@@ -8,6 +8,9 @@ from wireless import connectWireless
 # Allow for GPIO access
 from gpio import get_button_events
 
+import machine
+import sys
+
 # Original code for web socket server by Florin Dragan licensed under the MIT License: https://gitlab.com/florindragan/raspberry_pico_w_websocket/-/blob/main/LICENSE
 # MIT License
 #
@@ -52,6 +55,12 @@ class AppServer(WebSocketServer):
     def _make_client(self, conn):
         return clientHandle(conn)
 
+# Failsafe
+# https://forums.raspberrypi.com/viewtopic.php?t=351934
+enable_21 = machine.Pin(21, machine.Pin.IN, machine.Pin.PULL_UP)
+if enable_21.value() == 1:
+    print("enable-pin not connected to GND, exit")
+    sys.exit()
 
 # Connect to WiFi network
 ip = connectWireless()
