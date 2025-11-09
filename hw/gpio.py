@@ -23,6 +23,13 @@ button_events = []
 # Lockout state - when True, player buttons are disabled
 lockout_active = False
 
+# Per-player lockout - tracks which players have already pressed their button this question
+player_lockout = {
+    'player1': False,
+    'player2': False,
+    'player3': False
+}
+
 # LED timer tracking (stores the time when LED should turn off, 0 means off)
 led_timers = {
     'player1': 0,
@@ -48,11 +55,15 @@ last_interrupt_time = {
 
 # Interrupt handler for player 1 button
 def player1_handler(pin):
-    global button_events, last_interrupt_time, led_timers, lockout_active
-    # Check lockout - don't process if locked out
+    global button_events, last_interrupt_time, led_timers, lockout_active, player_lockout
+    # Check global lockout - don't process if locked out
     if lockout_active:
         return
+    # Check per-player lockout - don't process if this player is locked out
+    if player_lockout['player1']:
+        return
     lockout_active = True
+    player_lockout['player1'] = True
     current_time = time.ticks_ms()
     if time.ticks_diff(current_time, last_interrupt_time['player1']) > DEBOUNCE_TIME:
         button_events.append('player1')
@@ -64,11 +75,15 @@ def player1_handler(pin):
 
 # Interrupt handler for player 2 button
 def player2_handler(pin):
-    global button_events, last_interrupt_time, led_timers, lockout_active
-    # Check lockout - don't process if locked out
+    global button_events, last_interrupt_time, led_timers, lockout_active, player_lockout
+    # Check global lockout - don't process if locked out
     if lockout_active:
         return
+    # Check per-player lockout - don't process if this player is locked out
+    if player_lockout['player2']:
+        return
     lockout_active = True
+    player_lockout['player2'] = True
     current_time = time.ticks_ms()
     if time.ticks_diff(current_time, last_interrupt_time['player2']) > DEBOUNCE_TIME:
         button_events.append('player2')
@@ -80,11 +95,15 @@ def player2_handler(pin):
 
 # Interrupt handler for player 3 button
 def player3_handler(pin):
-    global button_events, last_interrupt_time, led_timers, lockout_active
-    # Check lockout - don't process if locked out
+    global button_events, last_interrupt_time, led_timers, lockout_active, player_lockout
+    # Check global lockout - don't process if locked out
     if lockout_active:
         return
+    # Check per-player lockout - don't process if this player is locked out
+    if player_lockout['player3']:
+        return
     lockout_active = True
+    player_lockout['player3'] = True
     current_time = time.ticks_ms()
     if time.ticks_diff(current_time, last_interrupt_time['player3']) > DEBOUNCE_TIME:
         button_events.append('player3')
@@ -116,13 +135,17 @@ def incorrect_handler(pin):
 
 # Interrupt handler for next question button
 def next_question_handler(pin):
-    global button_events, last_interrupt_time, lockout_active
+    global button_events, last_interrupt_time, lockout_active, player_lockout
     current_time = time.ticks_ms()
     if time.ticks_diff(current_time, last_interrupt_time['next_question']) > DEBOUNCE_TIME:
         button_events.append('next_question')
         last_interrupt_time['next_question'] = current_time
-        # Reset lockout when next question is pressed
+        # Reset global lockout when next question is pressed
         lockout_active = False
+        # Reset all per-player lockouts when next question is pressed
+        player_lockout['player1'] = False
+        player_lockout['player2'] = False
+        player_lockout['player3'] = False
 
 # Configure interrupts for all buttons (trigger on rising edge)
 player1_btn.irq(trigger=Pin.IRQ_RISING, handler=player1_handler)
