@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'Clarendon';
+    font-style: normal;
+    font-weight: 500;
+    src: local('Clarendon'), url('clarendonRegular.woff') format('woff');
+}
+
+
