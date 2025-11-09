@@ -1,10 +1,10 @@
 # Banananeopardy
 
-A small MicroPython-based quiz / buzzer server that runs on a Raspberry Pi Pico 2W and serves a simple web-based frontend. Works without internet so you can play wherever you are!
+A MicroPython-based quiz / buzzer server that runs on a Raspberry Pi Pico 2W and serves a web-based frontend. Works without internet so you can play wherever you are!
 
 The hardware of the project contains buzzers in the shape of bananas to have an ergonomic feel!
 
-This repository contains the Pico-side WebSocket server and a minimal web client (in the `web/` folder) used to play a Jeopardy-like buzzer game.
+This repository contains the Pico-side WebSocket server and a web client (in the `web/` folder) used to play a Jeopardy-like buzzer game.
 
 ## Features
 
