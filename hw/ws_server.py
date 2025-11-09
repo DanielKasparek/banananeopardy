@@ -81,38 +81,124 @@ class WebSocketServer:
             cl.close()
             return
 
+        # Read the request first
         try:
-            websocket_helper.server_handshake(cl)
-        except OSError:
-            # Not a websocket connection, serve webpage
-            self._serve_page(cl, self._page)
+            cl.setblocking(False)
+            request = cl.recv(1024).decode('utf-8')
+            cl.setblocking(True)
+        except:
+            cl.close()
             return
 
-        self._clients.append(
-            self._make_client(
-                WebSocketConnection(remote_addr, cl, self.remove_connection)
-            )
-        )
+        # Check if it's a WebSocket upgrade request
+        if 'Upgrade: websocket' in request or 'upgrade: websocket' in request.lower():
+            try:
+                websocket_helper.server_handshake(cl)
+                self._clients.append(
+                    self._make_client(
+                        WebSocketConnection(remote_addr, cl, self.remove_connection)
+                    )
+                )
+            except:
+                cl.close()
+        else:
+            # Regular HTTP request, serve webpage
+            self._serve_http_request(cl, request)
+            return
 
     def _make_client(self, conn):
         return WebSocketClient(conn)
 
-    # Serve the webpage
-    def _serve_page(self, sock, page):
+    # Parse HTTP request and get the requested path
+    def _parse_http_request(self, request):
         try:
-            sock.sendall(
-                "HTTP/1.1 200 OK\nConnection: close\nServer: piMI\nContent-Type: text/html\n"
-            )
-            length = os.stat(page)[6]
-            sock.sendall("Content-Length: {}\n\n".format(length))
-            # Process page by lines to avoid large strings
-            with open(page, "r") as f:
-                for line in f:
-                    sock.sendall(line)
-        except OSError:
-            # Error while serving webpage
+            # Extract the path from the first line (e.g., "GET /path HTTP/1.1")
+            lines = request.split('\r\n')
+            if lines:
+                parts = lines[0].split(' ')
+                if len(parts) >= 2:
+                    path = parts[1]
+                    # Default to index.html for root path
+                    if path == '/' or path == '':
+                        path = '/index.html'
+                    return path
+        except:
             pass
-        sock.close()
+        return '/index.html'
+
+    # Get content type based on file extension
+    def _get_content_type(self, filename):
+        if filename.endswith('.html'):
+            return 'text/html'
+        elif filename.endswith('.css'):
+            return 'text/css'
+        elif filename.endswith('.js'):
+            return 'application/javascript'
+        elif filename.endswith('.json'):
+            return 'application/json'
+        elif filename.endswith('.png'):
+            return 'image/png'
+        elif filename.endswith('.jpg') or filename.endswith('.jpeg'):
+            return 'image/jpeg'
+        elif filename.endswith('.gif'):
+            return 'image/gif'
+        elif filename.endswith('.ico'):
+            return 'image/x-icon'
+        elif filename.endswith('.svg'):
+            return 'image/svg+xml'
+        elif filename.endswith('.webmanifest'):
+            return 'application/manifest+json'
+        elif filename.endswith('.txt'):
+            return 'text/plain'
+        else:
+            return 'application/octet-stream'
+
+    # Serve HTTP request from web folder
+    def _serve_http_request(self, sock, request):
+        path = self._parse_http_request(request)
+        # Remove leading slash and construct file path in web folder
+        file_path = 'web' + path
+        
+        try:
+            # Check if file exists
+            os.stat(file_path)
+            content_type = self._get_content_type(file_path)
+            
+            # Send HTTP headers
+            sock.sendall(
+                "HTTP/1.1 200 OK\nConnection: close\nServer: piMI\nContent-Type: {}\n".format(content_type)
+            )
+            length = os.stat(file_path)[6]
+            sock.sendall("Content-Length: {}\n\n".format(length))
+            
+            # Determine if file should be read as binary or text
+            is_binary = content_type.startswith('image/') or content_type == 'application/octet-stream'
+            
+            # Send file content
+            if is_binary:
+                with open(file_path, "rb") as f:
+                    chunk_size = 512
+                    while True:
+                        chunk = f.read(chunk_size)
+                        if not chunk:
+                            break
+                        sock.sendall(chunk)
+            else:
+                with open(file_path, "r") as f:
+                    for line in f:
+                        sock.sendall(line)
+        except OSError as e:
+            # File not found or error reading file
+            try:
+                sock.sendall("HTTP/1.1 404 Not Found\nConnection: close\nServer: piMI\nContent-Type: text/html\n\n")
+                sock.sendall("<html><body><h1>404 Not Found</h1><p>The requested file was not found.</p></body></html>")
+            except:
+                pass
+        
+        try:
+            sock.close()
+        except:
+            pass
 
     # Stop the server
     def stop(self):
